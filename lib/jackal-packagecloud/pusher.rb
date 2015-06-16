@@ -22,18 +22,8 @@ module Jackal
 
       def execute(message)
         failure_wrap(message) do |payload|
-          client = packagecloud_client
-          payload.get(:data, :packagecloud, :packages).each do |pkg|
-            # distro_description can be nil for gems and source tarballs
-            # valid version strings (eg: ubuntu/precise):
-            #   https://packagecloud.io/docs#os_distro_version
-            description, path = pkg[:distro_description], pkg[:path]
-
-            distro_id = description && client.find_distribution_id(description)
-            package = ::Packagecloud::Package.new(*[open(path), distro_id].compact)
-
-            client.put_package("test", package)
-          end
+          packages = payload.get(:data, :packagecloud, :packages)
+          upload_packages(packages)
 
           payload[:data][:packagecloud].delete(:packages)
           job_completed(:packagecloud_pusher, payload, message)
@@ -44,6 +34,21 @@ module Jackal
         acct_name, acct_key = config[:account_name], config[:api_key]
         credentials = ::Packagecloud::Credentials.new(acct_name, acct_key)
         ::Packagecloud::Client.new(credentials)
+      end
+
+      def upload_packages(packages)
+        client = packagecloud_client
+        packages.each do |pkg|
+          # distro_description can be nil for gems and source tarballs
+          # valid version strings (eg: ubuntu/precise):
+          #   https://packagecloud.io/docs#os_distro_version
+          description, path = pkg[:distro_description], pkg[:path]
+
+          distro_id = description && client.find_distribution_id(description)
+          package = ::Packagecloud::Package.new(*[open(path), distro_id].compact)
+
+          client.put_package("test", package)
+        end
       end
 
     end

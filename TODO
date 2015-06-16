@@ -1,5 +1,2 @@
-* Stub out actual API call for tests
-* Add expectations regarding payload being sent to packagecloud-ruby API
-* refactor some of the lib code to be more conducive to unit testing
 * support source tarballs being sent to packagecloud?
-      
+

@@ -2,6 +2,11 @@ require 'jackal-packagecloud'
 require 'pry'
 
 class Jackal::Packagecloud::Pusher
+  attr_accessor :test_payload
+  # stub out actual packagecloud call and save args for expectations
+  def upload_packages(packages)
+    test_payload.set(:packages, packages)
+  end
 end
 
 describe Jackal::Packagecloud::Pusher do
@@ -16,17 +21,31 @@ describe Jackal::Packagecloud::Pusher do
   let(:actor) { Carnivore::Supervisor.supervisor[:jackal_packagecloud_input] }
 
   describe 'valid?' do
-    it 'executes with valid payload' do
-      result = transmit_and_wait(actor, valid_payload, 3)
-      puts '-'*80
-      puts result.inspect
-      binding.pry
-      callback_executed?(result).must_equal true
+    it 'does not execute if missing config or payload data' do
+      h = { :packagecloud => {} }
+      payload = Jackal::Utils.new_payload(:test, h)
+      result = transmit_and_wait(actor, payload, 5)
+      callback_executed?(result).must_equal false
     end
   end
 
   describe 'execute' do
-    it 'passes correct data/format to packagecloud-notifier' do
+    it 'executes with valid payload / passes correct arts to packagecloud gem' do
+      result = transmit_and_wait(actor, valid_payload, 5)
+
+      callback_executed?(result).must_equal(true)
+      result[:packages].count.must_equal(2)
+
+      result[:packages].each do |pkg|
+        desc = pkg[:distro_description]
+        # if description is present, we're working with debian package
+        if desc
+          desc.must_equal 'ubuntu/precise'
+          pkg[:path].must_match(/test\.deb$/)
+        else
+          pkg[:path].must_match(/test-0.1.0\.gem$/)
+        end
+      end
     end
   end
 

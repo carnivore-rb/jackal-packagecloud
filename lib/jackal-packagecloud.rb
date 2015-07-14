@@ -1,6 +1,7 @@
 require 'jackal'
 
 module Jackal
+  # Jackal Cloud integration
   module Packagecloud
     autoload :Pusher, 'jackal-packagecloud/pusher'
   end
@@ -10,10 +11,16 @@ require 'jackal-packagecloud/version'
 
 Jackal.service(
   :packagecloud,
-  :description => 'Send messages to Packagecloud',
+  :description => 'Upload packages to packagecloud',
   :configuration => {
-    :webhook_url => {
-      :description => 'Webhook URL to send messages'
+    :account_name => {
+      :description => 'packagecloud account name',
+    },
+    :api_key => {
+      :description => 'packagecloud API key'
+    },
+    :default_repo => {
+      :description => 'Default repository to push packages'
     }
   }
 )

@@ -1,11 +1,13 @@
 require 'jackal-packagecloud'
 require 'pry'
 
-class Jackal::Packagecloud::Pusher
-  attr_accessor :test_payload
-  # stub out actual packagecloud call and save args for expectations
-  def upload_packages(packages)
-    test_payload.set(:packages, packages)
+if(ENV['PACKAGECLOUD_API_KEY'])
+  class Jackal::Packagecloud::Pusher
+    attr_accessor :test_payload
+    # stub out actual packagecloud call and save args for expectations
+    def upload_packages(packages)
+      test_payload.set(:packages, packages)
+    end
   end
 end
 
@@ -16,7 +18,7 @@ describe Jackal::Packagecloud::Pusher do
     track_execution(Jackal::Packagecloud::Pusher)
   end
 
-  after  { @runner.terminate if @runner && @runner.alive? }
+  after{ @runner.terminate if @runner && @runner.alive? }
 
   let(:actor) { Carnivore::Supervisor.supervisor[:jackal_packagecloud_input] }
 
@@ -30,16 +32,17 @@ describe Jackal::Packagecloud::Pusher do
   end
 
   describe 'execute' do
-    it 'executes with valid payload / passes correct arts to packagecloud gem' do
+    it 'executes with valid payload / passes correct arguments to packagecloud gem' do
       result = transmit_and_wait(actor, valid_payload, 5)
 
       callback_executed?(result).must_equal(true)
-      result[:packages].count.must_equal(2)
 
-      result[:packages].each do |pkg|
+      result.get(:data, :packagecloud, :uploaded).count.must_equal(2)
+
+      result.get(:data, :packagecloud, :uploaded).each do |pkg|
         desc = pkg[:distro_description]
         # if description is present, we're working with debian package
-        if desc
+        if(desc)
           desc.must_equal 'ubuntu/precise'
           pkg[:path].must_match(/test\.deb$/)
         else
@@ -51,16 +54,22 @@ describe Jackal::Packagecloud::Pusher do
 
   private
 
-  def path(relative)
-    File.expand_path(File.join('..', 'packages', relative), __FILE__)
-  end
-
   def valid_payload
-    h = { :packagecloud => {
-            :packages => [ { :distro_description => 'ubuntu/precise',
-                             :path => path('deb/test.deb') },
-                           { :path => path('gem/test-0.1.0.gem') }]}}
-    Jackal::Utils.new_payload(:test, h)
+    Jackal::Utils.new_payload(:test,
+      :packagecloud => {
+        :packages => [
+          {
+            :distro_description => 'ubuntu/precise',
+            :path => 'test.deb',
+            :repo => 'jackal-test'
+          },
+          {
+            :path => 'test-0.1.0.gem',
+            :repo => 'jackal-test'
+          }
+        ]
+      }
+    )
   end
 
 end

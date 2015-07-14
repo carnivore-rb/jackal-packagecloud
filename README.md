@@ -21,11 +21,19 @@ Requires configured api_key / account_name for packagecloud in jackal config
 ## Payload structure
 
 ```json
-{ "data": {
+{
+  "data": {
     "packagecloud": {
       "packages": [
-        { "distro_description": "ubuntu/precise",
-          "path": '/tmp/foo.deb' }]}}}
+        {
+          "distro_description": "ubuntu/precise",
+          "path": "asset_store/key/path/foo.deb",
+          "repo": "my_repo"
+        }
+      ]
+    }
+  }
+}
 ```
 
 # Info

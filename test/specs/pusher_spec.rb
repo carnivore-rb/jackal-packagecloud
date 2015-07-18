@@ -1,7 +1,7 @@
 require 'jackal-packagecloud'
 require 'pry'
 
-if(ENV['PACKAGECLOUD_API_KEY'])
+unless(ENV['PACKAGECLOUD_API_KEY'])
   class Jackal::Packagecloud::Pusher
     attr_accessor :test_payload
     # stub out actual packagecloud call and save args for expectations

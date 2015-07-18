@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.description = 'Jackal packagecloud Integration'
   s.license = 'Apache 2.0'
   s.require_path = 'lib'
-  s.add_dependency 'jackal', '>= 0.3.14', '< 1.0'
+  s.add_dependency 'jackal', '>= 0.3.18', '< 1.0'
   s.add_dependency 'jackal-assets'
   s.add_dependency 'packagecloud-ruby', '~> 0.2.19'
 

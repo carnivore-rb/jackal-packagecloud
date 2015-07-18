@@ -18,6 +18,9 @@ Requires configured api_key / account_name for packagecloud in jackal config
   end
 ```
 
+Package assets are fetched from the configured asset store requiring
+the asset store to be configured and available in running service.
+
 ## Payload structure
 
 ```json

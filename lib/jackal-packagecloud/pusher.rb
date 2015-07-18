@@ -66,7 +66,7 @@ module Jackal
       # @note `:path` is required and references the asset store.
       #   `:distro_description` and `:repo` are optional. Default
       #   `:repo` value is pulled for the configuration or set to `"test"`.
-      # @return [::Packagecloud::Result]
+      # @return [TrueClass]
       def upload_packages(packages)
         client = packagecloud_client
         packages.each do |pkg|
@@ -75,11 +75,15 @@ module Jackal
           #   https://packagecloud.io/docs#os_distro_version
           description, path = pkg[:distro_description], pkg[:path]
 
+          event!(:info, :info => "Pushing package to packagecloud: #{File.basename(path)}")
+
           distro_id = description && client.find_distribution_id(description)
           package = ::Packagecloud::Package.new(*[asset_store.get(path), distro_id].compact)
-
           client.put_package(pkg.fetch(:repo, config.fetch(:default_repo, 'test')), package)
+
+          event!(:info, :info => "Completed pushing package to packagecloud: #{File.basename(path)}")
         end
+        true
       end
 
     end
